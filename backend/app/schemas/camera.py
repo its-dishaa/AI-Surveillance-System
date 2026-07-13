@@ -1,18 +1,19 @@
 from pydantic import BaseModel, ConfigDict
 
+from typing import Optional
 
 class CameraCreate(BaseModel):
     name: str
     latitude: float
     longitude: float
-    source: str
+    source: Optional[str] = None
 
 
 class CameraUpdate(BaseModel):
     name: str
     latitude: float
     longitude: float
-    source: str
+    source: Optional[str] = None
 
 
 class CameraResponse(BaseModel):
@@ -20,6 +21,6 @@ class CameraResponse(BaseModel):
     name: str
     latitude: float
     longitude: float
-    source: str
+    source: str | None = None
 
     model_config = ConfigDict(from_attributes=True)
