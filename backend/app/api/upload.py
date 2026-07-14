@@ -13,8 +13,10 @@ router = APIRouter(
     tags=["Upload"],
 )
 
-UPLOAD_FOLDER = Path("uploads")
-UPLOAD_FOLDER.mkdir(exist_ok=True)
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
+UPLOAD_FOLDER = BASE_DIR / "uploads"
+UPLOAD_FOLDER.mkdir(parents=True, exist_ok=True)
+
 
 
 @router.post("/")
@@ -23,38 +25,34 @@ async def upload_video(
     video: UploadFile = File(...),
     db: Session = Depends(get_db),
 ):
-    """
-    Upload a CCTV video and register it in the database.
-    """
-
-    # Save file to uploads folder
-    file_path = UPLOAD_FOLDER / video.filename
-
-    with open(file_path, "wb") as buffer:
-        shutil.copyfileobj(video.file, buffer)
-
-    # Create database record
-    video_data = VideoCreate(
-        filename=video.filename,
-        camera_id=camera_id,
-    )
-
     try:
-        db_video = video_service.create_video(
-            db,
-            video_data,
+        print("===== Upload Started =====")
+        print("Camera:", camera_id)
+        print("Filename:", video.filename)
+
+        file_path = UPLOAD_FOLDER / video.filename
+        print("Saving to:", file_path.resolve())
+
+        with open(file_path, "wb") as buffer:
+            shutil.copyfileobj(video.file, buffer)
+
+        print("File saved successfully")
+
+        video_data = VideoCreate(
+            filename=video.filename,
+            camera_id=camera_id,
         )
 
-    except ValueError as e:
-        raise HTTPException(
-            status_code=400,
-            detail=str(e),
-        )
+        db_video = video_service.create_video(db, video_data)
 
-    return {
-        "message": "Video uploaded successfully.",
-        "video_id": db_video.id,
-        "camera_id": db_video.camera_id,
-        "filename": db_video.filename,
-        "path": str(file_path),
-    }
+        print("Database saved:", db_video.id)
+
+        return {
+            "message": "Video uploaded successfully",
+            "video_id": db_video.id,
+        }
+
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))
