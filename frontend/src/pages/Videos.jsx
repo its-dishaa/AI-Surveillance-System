@@ -67,16 +67,11 @@ function Videos() {
 
 
 
-
-  const handleView = (video) => {
-
-
-    navigate(`/analytics?video=${video.id}`);
-
-
-  };
-
-
+const handleView = (video) => {
+  console.log("Video object:", video);
+  console.log("Navigating to:", `/analytics?video=${video.id}`);
+  window.location.href = `/analytics?video=${video.id}`;
+};
 
 
 

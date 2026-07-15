@@ -15,7 +15,13 @@ def get_tracks(
     video_id: int,
     db: Session = Depends(get_db),
 ):
-    return track_service.get_tracks_by_video(
+    print("Requested video_id:", video_id)
+
+    tracks = track_service.get_tracks_by_video(
         db,
         video_id,
     )
+
+    print("Tracks found:", len(tracks))
+
+    return tracks

@@ -4,33 +4,27 @@ import cv2
 from app.ai.detector import detector
 from app.models.video import Video
 
-UPLOAD_FOLDER = Path("uploads")
-
 
 def generate_frames(video: Video):
 
-    video_path = UPLOAD_FOLDER / video.filename
-
     print("=" * 50)
-    print(f"Opening video: {video_path}")
+    print("Opening:", video.file_path)
 
-    cap = cv2.VideoCapture(str(video_path))
+    cap = cv2.VideoCapture(video.file_path)
 
     print("Video opened:", cap.isOpened())
 
-    while True:
+    if not cap.isOpened():
+        print(f"Cannot open video: {video.file_path}")
+        return
 
+    while True:
         success, frame = cap.read()
-        print("Frame read:", success)
 
         if not success:
             break
 
-        print("Running detection...")
-
         results = detector.detect(frame)
-
-        print("Detection complete")
 
         annotated_frame = results[0].plot()
 
@@ -38,8 +32,6 @@ def generate_frames(video: Video):
 
         if not success:
             continue
-
-        print("Sending frame")
 
         yield (
             b"--frame\r\n"

@@ -23,6 +23,7 @@ class VideoRepository:
         db_video = Video(
             filename=video.filename,
             camera_id=video.camera_id,
+            file_path=video.file_path,
         )
 
         db.add(db_video)

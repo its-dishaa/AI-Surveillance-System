@@ -18,7 +18,6 @@ UPLOAD_FOLDER = BASE_DIR / "uploads"
 UPLOAD_FOLDER.mkdir(parents=True, exist_ok=True)
 
 
-
 @router.post("/")
 async def upload_video(
     camera_id: int = Form(...),
@@ -31,16 +30,14 @@ async def upload_video(
         print("Filename:", video.filename)
 
         file_path = UPLOAD_FOLDER / video.filename
-        print("Saving to:", file_path.resolve())
 
         with open(file_path, "wb") as buffer:
             shutil.copyfileobj(video.file, buffer)
 
-        print("File saved successfully")
-
         video_data = VideoCreate(
             filename=video.filename,
             camera_id=camera_id,
+            file_path=str(file_path),
         )
 
         db_video = video_service.create_video(db, video_data)

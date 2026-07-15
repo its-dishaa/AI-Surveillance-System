@@ -2,7 +2,8 @@ import { useState } from "react";
 import { PlayCircle } from "lucide-react";
 
 import StreamPlayer from "../components/StreamPlayer";
-
+import { useSearchParams } from "react-router-dom";
+import { StreamAPI } from "../api/api";
 
 function Streaming() {
 

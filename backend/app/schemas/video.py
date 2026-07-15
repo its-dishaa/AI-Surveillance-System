@@ -6,6 +6,7 @@ from pydantic import BaseModel, ConfigDict
 class VideoBase(BaseModel):
     filename: str
     camera_id: int
+    file_path:str
 
 
 class VideoCreate(VideoBase):

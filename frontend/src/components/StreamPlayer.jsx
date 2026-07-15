@@ -48,7 +48,6 @@ function StreamPlayer({ videoId }) {
       </h2>
 
 
-
       <img
 
         src={StreamAPI(videoId)}

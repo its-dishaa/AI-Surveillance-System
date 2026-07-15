@@ -3,7 +3,6 @@ from sqlalchemy.orm import Session
 from app.models.entity import Entity
 
 
-
 class EntityRepository:
     def create_entity(
         self,
@@ -18,16 +17,20 @@ class EntityRepository:
         )
 
         db.add(entity)
-        try:
-         db.commit()
-        except Exception as e:
-         print("========== ENTITY COMMIT FAILED ==========")
-        print(type(e))
-        print(e)
-        raise
-        db.refresh(entity)
 
-        return entity
+        try:
+            db.commit()
+            db.refresh(entity)
+            return entity
+
+        except Exception as e:
+            db.rollback()
+
+            print("========== ENTITY COMMIT FAILED ==========")
+            print(type(e))
+            print(e)
+
+            raise
 
     def get_all_entities(
         self,

@@ -1,60 +1,56 @@
 import axios from "axios";
 
 const api = axios.create({
-    baseURL: import.meta.env.VITE_API_URL,
-
-    headers: {
-        "Content-Type": "application/json"
-    }
+  baseURL: import.meta.env.VITE_API_URL,
 });
 
 export default api;
 
 export const DashboardAPI = () =>
-    api.get("/dashboard/overview");
+  api.get("/dashboard/overview");
 
 export const CamerasAPI = () =>
-    api.get("/cameras");
+  api.get("/cameras/");          // changed
 
 export const CameraAPI = (id) =>
-    api.get(`/cameras/${id}`);
+  api.get(`/cameras/${id}`);
 
 export const DeleteCameraAPI = (id) =>
-    api.delete(`/cameras/${id}`);
+  api.delete(`/cameras/${id}`);
 
 export const CreateCameraAPI = (data) =>
-    api.post("/cameras", data);
+  api.post("/cameras/", data);
 
 export const VideosAPI = () =>
-    api.get("/videos");
+  api.get("/videos/");           // changed
 
 export const DeleteVideoAPI = (id) =>
-    api.delete(`/videos/${id}`);
+  api.delete(`/videos/${id}`);
 
 export const UploadVideoAPI = (formData) =>
-    api.post("/upload", formData, {
-        headers: {
-            "Content-Type": "multipart/form-data"
-        }
-    });
+  api.post("/upload/", formData, {   // changed
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
 
 export const ProcessVideoAPI = (id) =>
-    api.post(`/process/${id}`);
+  api.post(`/process/${id}`);
 
 export const AnalyticsAPI = (id) =>
-    api.get(`/analytics/videos/${id}`);
+  api.get(`/analytics/videos/${id}`);
 
 export const EventsAPI = () =>
-    api.get("/events/");
+  api.get("/events/");
 
 export const VideoEventsAPI = (id) =>
-    api.get(`/videos/${id}/events`);
+  api.get(`/videos/${id}/events`);
 
 export const TracksAPI = (id) =>
-    api.get(`/videos/${id}/tracks`);
+  api.get(`/videos/${id}/tracks`);
 
 export const TrackPointsAPI = (id) =>
-    api.get(`/tracks/${id}/points`);
+  api.get(`/tracks/${id}/points`);
 
 export const StreamAPI = (id) =>
-    `${import.meta.env.VITE_API_URL}/stream/${id}`;
+  `${import.meta.env.VITE_API_URL}/stream/${id}`;

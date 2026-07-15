@@ -19,6 +19,7 @@ def process_uploaded_video(video_id: int):
     db: Session = SessionLocal()
 
     try:
+        # Get the video from the database
         video = (
             db.query(Video)
             .filter(Video.id == video_id)
@@ -31,12 +32,10 @@ def process_uploaded_video(video_id: int):
                 detail="Video not found."
             )
 
-        # Build the path to the uploaded video
-        video_path = Path("uploads") / video.filename
+        print("Processing:", video.file_path)
 
-        # Process the video
         processed_path = process_video(
-            str(video_path),
+            video.file_path,
             video.id,
         )
 
@@ -44,6 +43,14 @@ def process_uploaded_video(video_id: int):
             "message": "Video processed successfully.",
             "processed_video": processed_path,
         }
+
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(
+            status_code=500,
+            detail=str(e),
+        )
 
     finally:
         db.close()

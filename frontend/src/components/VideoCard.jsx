@@ -63,12 +63,14 @@ function VideoCard({ video, onDelete, onView }) {
         <div className="flex items-center gap-2">
           {onView && (
             <button
-              onClick={() => onView(video)}
-              className="p-2 rounded-lg bg-blue-100 hover:bg-blue-200 text-blue-600 transition"
-              title="View Details"
-            >
-              <PlayCircle size={18} />
-            </button>
+  onClick={() => {
+    alert(`Video ID: ${video.id}`);
+    onView(video);
+  }}
+  className="p-2 rounded-lg bg-blue-100 hover:bg-blue-200 text-blue-600 transition"
+>
+  <PlayCircle size={18} />
+</button>
           )}
 
           <button

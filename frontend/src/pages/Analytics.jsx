@@ -1,14 +1,21 @@
-import { useMemo } from "react";
-import { useSearchParams } from "react-router-dom";
-
+import { useState, useMemo } from "react";
 import {
   Boxes,
-  Activity,
-  Percent,
-  Trophy,
+  Users,
+  Car,
+  Bike,
+  Bus,
+  Truck,
+  Route,
+  TriangleAlert,
+  Gauge,
+  Clock3,
 } from "lucide-react";
 
-import { AnalyticsAPI } from "../api/api";
+import {
+  AnalyticsAPI,
+  VideosAPI,
+} from "../api/api";
 
 import useFetch from "../hooks/useFetch";
 
@@ -16,202 +23,221 @@ import Loading from "../components/Loading";
 import StatCard from "../components/StatCard";
 import ChartCard from "../components/ChartCard";
 
-
 function Analytics() {
+  const [selectedVideo, setSelectedVideo] = useState("");
+  const [videoId, setVideoId] = useState("");
 
-  const [searchParams] = useSearchParams();
+  // Load all uploaded videos
+  const {
+    data: videos,
+    loading: videosLoading,
+  } = useFetch(VideosAPI);
 
-  const videoId = searchParams.get("video");
+  // Fetch analytics only after clicking Load
+  const fetchAnalytics = useMemo(() => {
+    if (!videoId) return null;
 
+    return () => AnalyticsAPI(videoId);
+  }, [videoId]);
 
- const fetchAnalytics = useMemo(() => {
-
-  if (!videoId) {
-    return null;
-  }
-
-  return () => AnalyticsAPI(videoId);
-
-}, [videoId]);
-
-
-const {
-  data: analytics,
-  loading,
-  error,
-} = useFetch(fetchAnalytics);
-
-
+  const {
+    data: analytics,
+    loading,
+    error,
+  } = useFetch(fetchAnalytics);
 
   const chartData = useMemo(() => {
+    if (!analytics?.object_distribution) return [];
 
-    if (!analytics?.object_distribution) {
-      return [];
-    }
-
-
-    if (Array.isArray(analytics.object_distribution)) {
-
-      return analytics.object_distribution;
-
-    }
-
-
-    return Object.entries(
-      analytics.object_distribution
-    ).map(([name, value]) => ({
-      name,
-      value,
-    }));
-
-
+    return Object.entries(analytics.object_distribution).map(
+      ([name, value]) => ({
+        name,
+        value,
+      })
+    );
   }, [analytics]);
 
+  const objectCounts = analytics?.object_distribution || {};
 
-
-  if (!videoId) {
-
-    return (
-
-      <div className="rounded-xl border border-yellow-300 bg-yellow-100 p-6">
-
-        <h2 className="text-xl font-semibold text-yellow-800">
-
-          No Video Selected
-
-        </h2>
-
-
-        <p className="mt-2 text-yellow-700">
-
-          Open a video from Videos page to view analytics.
-
-        </p>
-
-
-      </div>
-
-    );
-
-  }
-
-
-
-  if (loading) {
-
-    return <Loading text="Loading analytics..." />;
-
-  }
-
-
-
-  if (error) {
-
-    return (
-
-      <div className="rounded-xl border border-red-200 bg-red-100 p-6 text-red-700">
-
-        Failed to load analytics.
-
-      </div>
-
-    );
-
-  }
-
-
+  const hourData = [
+    { hour: "00", count: 12 },
+    { hour: "02", count: 18 },
+    { hour: "04", count: 25 },
+    { hour: "06", count: 14 },
+    { hour: "08", count: 31 },
+    { hour: "10", count: 44 },
+    { hour: "12", count: 40 },
+    { hour: "14", count: 28 },
+    { hour: "16", count: 35 },
+    { hour: "18", count: 46 },
+    { hour: "20", count: 37 },
+    { hour: "22", count: 22 },
+  ];
 
   return (
-
     <div className="space-y-8">
 
+      <div className="flex justify-between items-center">
 
-      <div>
+        <div>
+          <h1 className="text-4xl font-bold">
+            Analytics Dashboard
+          </h1>
 
-        <h1 className="text-3xl font-bold text-gray-800">
+          <p className="text-gray-500">
+            AI Surveillance Video Analytics
+          </p>
+        </div>
 
-          Video Analytics
+        <div className="flex gap-3">
 
-        </h1>
+          <select
+            className="border rounded-lg px-4 py-2"
+            value={selectedVideo}
+            onChange={(e) => setSelectedVideo(e.target.value)}
+          >
+            <option value="">
+              Select Video
+            </option>
 
+            {videos?.map((video) => (
+              <option
+                key={video.id}
+                value={video.id}
+              >
+                {video.filename || `Video ${video.id}`}
+              </option>
+            ))}
 
-        <p className="mt-2 text-gray-500">
+          </select>
 
-          Analytics for Video #{videoId}
+          <button
+            onClick={() => setVideoId(selectedVideo)}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg"
+          >
+            Load Analytics
+          </button>
 
-        </p>
-
-      </div>
-
-
-
-
-      <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-4">
-
-
-        <StatCard
-          title="Total Objects"
-          value={analytics?.total_objects ?? 0}
-          icon={Boxes}
-          color="bg-blue-600"
-        />
-
-
-
-        <StatCard
-          title="Total Events"
-          value={analytics?.total_events ?? 0}
-          icon={Activity}
-          color="bg-red-600"
-        />
-
-
-
-        <StatCard
-          title="Average Confidence"
-          value={
-            analytics?.average_confidence !== undefined
-              ? `${(
-                  analytics.average_confidence * 100
-                ).toFixed(2)}%`
-              :
-              "0%"
-          }
-          icon={Percent}
-          color="bg-green-600"
-        />
-
-
-
-        <StatCard
-          title="Most Detected"
-          value={
-            analytics?.most_detected_object || "-"
-          }
-          icon={Trophy}
-          color="bg-purple-600"
-        />
-
+        </div>
 
       </div>
 
+      {videosLoading && (
+        <Loading text="Loading videos..." />
+      )}
 
+      {loading && (
+        <Loading text="Loading analytics..." />
+      )}
 
+      {error && (
+        <div className="rounded-lg bg-red-100 text-red-700 p-4">
+          Failed to load analytics.
+        </div>
+      )}
 
+      {!analytics ? (
 
-      <ChartCard
-        title="Object Distribution"
-        type="pie"
-        data={chartData}
-      />
+        <div className="rounded-xl bg-white shadow p-12 text-center text-gray-500">
+          Select a video and click
+          <b> Load Analytics</b>.
+        </div>
 
+      ) : (
 
+        <>
+          <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-5">
+
+            <StatCard
+              title="Objects"
+              value={analytics.total_objects ?? 0}
+              icon={Boxes}
+            />
+
+            <StatCard
+              title="Persons"
+              value={objectCounts.person ?? 0}
+              icon={Users}
+            />
+
+            <StatCard
+              title="Cars"
+              value={objectCounts.car ?? 0}
+              icon={Car}
+            />
+
+            <StatCard
+              title="Bikes"
+              value={objectCounts.motorcycle ?? 0}
+              icon={Bike}
+            />
+
+            <StatCard
+              title="Buses"
+              value={objectCounts.bus ?? 0}
+              icon={Bus}
+            />
+
+          </div>
+
+          <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-5">
+
+            <StatCard
+              title="Trucks"
+              value={objectCounts.truck ?? 0}
+              icon={Truck}
+            />
+
+            <StatCard
+              title="Tracks"
+              value={analytics.total_tracks ?? 0}
+              icon={Route}
+            />
+
+            <StatCard
+              title="Events"
+              value={analytics.total_events ?? 0}
+              icon={TriangleAlert}
+            />
+
+            <StatCard
+              title="Confidence"
+              value={`${(
+                (analytics.average_confidence ?? 0) * 100
+              ).toFixed(1)}%`}
+              icon={Gauge}
+            />
+
+            <StatCard
+              title="Time"
+              value={`${analytics.processing_time ?? 0}s`}
+              icon={Clock3}
+            />
+
+          </div>
+
+          <div className="grid lg:grid-cols-2 gap-6">
+
+            <ChartCard
+              title="Object Distribution"
+              type="pie"
+              data={chartData}
+            />
+
+            <ChartCard
+              title="Detections Per Hour"
+              type="line"
+              data={hourData}
+            />
+
+          </div>
+
+        </>
+
+      )}
 
     </div>
-
   );
-
 }
-
 
 export default Analytics;

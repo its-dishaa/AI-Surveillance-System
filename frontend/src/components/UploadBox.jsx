@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { UploadCloud, Loader2 } from "lucide-react";
 
 import {
@@ -8,6 +9,7 @@ import {
 } from "../api/api";
 
 function UploadBox() {
+
   const [cameras, setCameras] = useState([]);
   const [cameraId, setCameraId] = useState("");
   const [selectedFile, setSelectedFile] = useState(null);
@@ -35,54 +37,72 @@ function UploadBox() {
     }
   }
 
+  const navigate = useNavigate();
+
   async function handleUpload(e) {
+
     e.preventDefault();
 
     if (!cameraId) {
-      setMessage("Please select a camera.");
-      return;
+        setMessage("Please select a camera.");
+        return;
     }
 
     if (!selectedFile) {
-      setMessage("Please choose a video file.");
-      return;
+        setMessage("Please choose a video.");
+        return;
     }
 
     try {
-      setUploading(true);
-      setMessage("");
 
-      const formData = new FormData();
+        setUploading(true);
+        setMessage("Uploading video...");
 
-      formData.append("camera_id", cameraId);
-      formData.append("video", selectedFile);
+        const formData = new FormData();
 
-      const uploadRes = await UploadVideoAPI(formData);
+        formData.append("camera_id", cameraId);
+        formData.append("video", selectedFile);
 
-      const uploadedVideo =
-        uploadRes.data ?? uploadRes;
+        const uploadRes = await UploadVideoAPI(formData);
 
-      const videoId =
-        uploadedVideo.id ||
-        uploadedVideo.video_id;
+        const uploadedVideo = uploadRes.data;
 
-      if (videoId) {
-        await ProcessVideoAPI(videoId);
-      }
+        const videoId =
+            uploadedVideo.id ??
+            uploadedVideo.video_id;
 
-      setMessage("Video uploaded and processing started.");
+        if (!videoId) {
+            throw new Error("Video ID not returned.");
+        }
 
-      setSelectedFile(null);
-      setCameraId("");
+        setMessage("Processing video...");
+setMessage("Starting video processing...");
 
-      document.getElementById("video-upload-input").value = "";
+// Start processing but don't wait
+ProcessVideoAPI(videoId).catch((err) => {
+    console.error("Processing failed:", err);
+});
+
+// Redirect immediately
+navigate("/videos");
+
+        setTimeout(() => {
+            navigate("/videos");
+        }, 1500);
+
     } catch (err) {
-      console.error(err);
-      setMessage("Upload failed.");
+
+        console.error(err);
+
+        setMessage("❌ Upload failed.");
+
     } finally {
-      setUploading(false);
+
+        setUploading(false);
+
     }
-  }
+
+}
 
   return (
     <div className="bg-white rounded-xl shadow-md border border-gray-200 p-6">
